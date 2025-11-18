@@ -36,7 +36,7 @@ if not BOT_TOKEN:
     raise RuntimeError("ENV BOT_TOKEN belum di-set!")
 
 # GANTI ID ADMIN DENGAN ID TELEGRAM LU
-ADMIN_IDS = {123456789, 987654321}  # contoh, ganti angka ini
+ADMIN_IDS = {7321522905, 987654321}  # contoh, ganti angka ini
 
 # Limit per user per hari
 MAX_PER_DAY = 100
