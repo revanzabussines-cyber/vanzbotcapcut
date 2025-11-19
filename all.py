@@ -29,29 +29,193 @@ if not BOT_TOKEN:
 # GANTI KE ID TELEGRAM LU SENDIRI
 ADMIN_IDS = {7321522905}  # contoh: {123456789}
 
-# Limit global per user per hari (gabungan semua produk)
-MAX_PER_DAY = 100
-
 BASE = Path(__file__).parent
 PREMIUM_FILE = BASE / "premium.json"
 HISTORY_FILE = BASE / "history.json"
+LANG_FILE = BASE / "language.json"  # simpan bahasa user
 
 # File stok per produk
 STOK_CANVA = BASE / "stok_canva.txt"
 STOK_CAPCUT = BASE / "stok_capcut.txt"
 STOK_SCRIBD = BASE / "stok_scribd.txt"
+STOK_APPLE = BASE / "stok_apple.txt"
 STOK_VIU = BASE / "stok_viu.txt"
 STOK_VIDIO = BASE / "stok_vidio.txt"
+STOK_ALIGHT = BASE / "stok_alight.txt"
 
-# Display nama produk
+# Nama produk untuk tampilan
 PRODUCTS = {
     "CANVA": "Canva Kosongan",
     "CAPCUT": "CapCut Kosongan",
-    "SCRIBD": "Scribd Kosongan",
+    "SCRIBD": "Scribd Premium",
+    "APPLE": "Apple Music Kosongan",
     "VIU": "Viu Premium 1 Tahun",
     "VIDIO": "Vidio Platinum 1 TV",
+    "ALIGHT": "Alight Motion 1 Tahun",
 }
 
+# Limit per produk per hari (per user)
+PRODUCT_LIMIT = {
+    "CANVA": 50,
+    "CAPCUT": 100,
+    "SCRIBD": 10,
+    "APPLE": 30,
+    "VIU": 15,
+    "VIDIO": 10,
+    "ALIGHT": 15,
+}
+
+# Teks paket sewa per produk (buat /plans, bahasa Indonesia)
+PLAN_TEXTS_ID = {
+    "CAPCUT": (
+        "🎬 <b>Plan CapCut Kosongan</b>\n"
+        "Limit: <b>100 akun/hari</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "• Lite — 3 Hari  • <b>5K</b>\n"
+        "• Medium — 7 Hari  • <b>10K</b>\n"
+        "• High — 14 Hari  • <b>15K</b>\n\n"
+        "Cocok untuk jasa edit & reseller akun CapCut."
+    ),
+    "CANVA": (
+        "🎨 <b>Plan Canva Kosongan</b>\n"
+        "Limit: <b>50 akun/hari</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "• Lite — 3 Hari  • <b>10K</b>\n"
+        "• Medium — 7 Hari  • <b>18K</b>\n"
+        "• High — 14 Hari  • <b>30K</b>\n\n"
+        "Cocok untuk desain, jual jasa template, dsb."
+    ),
+    "SCRIBD": (
+        "📚 <b>Plan Scribd Premium</b>\n"
+        "Limit: <b>10 akun/hari</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "• Lite — 3 Hari  • <b>15K</b>\n"
+        "• Medium — 7 Hari  • <b>30K</b>\n"
+        "• High — 14 Hari  • <b>55K</b>\n\n"
+        "Cocok buat akses dokumen & e-book premium."
+    ),
+    "APPLE": (
+        "🎵 <b>Plan Apple Music Kosongan</b>\n"
+        "Limit: <b>30 akun/hari</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "• Lite — 3 Hari  • <b>7K</b>\n"
+        "• Medium — 7 Hari  • <b>12K</b>\n"
+        "• High — 14 Hari  • <b>20K</b>\n\n"
+        "Cocok buat kebutuhan musik & trial loop."
+    ),
+    "VIU": (
+        "🎬 <b>Plan Viu Premium 1 Tahun</b>\n"
+        "Limit: <b>15 akun/hari</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "• Lite — 3 Hari  • <b>15K</b>\n"
+        "• Medium — 7 Hari  • <b>25K</b>\n"
+        "• High — 14 Hari  • <b>35K</b>\n\n"
+        "Cocok untuk pecinta drama & film."
+    ),
+    "VIDIO": (
+        "📺 <b>Plan Vidio Platinum 1 TV</b>\n"
+        "Limit: <b>10 akun/hari</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "• Lite — 3 Hari  • <b>20K</b>\n"
+        "• Medium — 7 Hari  • <b>30K</b>\n"
+        "• High — 14 Hari  • <b>40K</b>\n\n"
+        "Cocok buat nonton bola, F1, dan sport lain."
+    ),
+    "ALIGHT": (
+        "🎥 <b>Plan Alight Motion 1 Tahun</b>\n"
+        "Limit: <b>15 akun/hari</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "• Lite — 3 Hari  • <b>15K</b>\n"
+        "• Medium — 7 Hari  • <b>25K</b>\n"
+        "• High — 14 Hari  • <b>35K</b>\n\n"
+        "Cocok buat editor video mobile & jasa preset."
+    ),
+    "ALL": (
+        "💎 <b>Plan ALL ACCESS (Semua Produk)</b>\n"
+        "Termasuk: CapCut, Canva, Scribd, Apple Music, Viu, Vidio, Alight Motion.\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "• Lite — 3 Hari  • <b>25K</b>\n"
+        "• Medium — 7 Hari  • <b>45K</b>\n"
+        "• High — 14 Hari  • <b>75K</b>\n\n"
+        "Paket paling hemat untuk reseller & jasa besar."
+    ),
+}
+
+# Versi Inggris sederhana untuk /plans
+PLAN_TEXTS_EN = {
+    "CAPCUT": (
+        "🎬 <b>CapCut Blank Plan</b>\n"
+        "Limit: <b>100 accounts/day</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "• Lite — 3 Days  • <b>5K</b>\n"
+        "• Medium — 7 Days  • <b>10K</b>\n"
+        "• High — 14 Days  • <b>15K</b>\n\n"
+        "Great for editors & CapCut resellers."
+    ),
+    "CANVA": (
+        "🎨 <b>Canva Blank Plan</b>\n"
+        "Limit: <b>50 accounts/day</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "• Lite — 3 Days  • <b>10K</b>\n"
+        "• Medium — 7 Days  • <b>18K</b>\n"
+        "• High — 14 Days  • <b>30K</b>\n\n"
+        "Perfect for designers and template sellers."
+    ),
+    "SCRIBD": (
+        "📚 <b>Scribd Premium Plan</b>\n"
+        "Limit: <b>10 accounts/day</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "• Lite — 3 Days  • <b>15K</b>\n"
+        "• Medium — 7 Days  • <b>30K</b>\n"
+        "• High — 14 Days  • <b>55K</b>\n\n"
+        "Great for ebook & document access."
+    ),
+    "APPLE": (
+        "🎵 <b>Apple Music Blank Plan</b>\n"
+        "Limit: <b>30 accounts/day</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "• Lite — 3 Days  • <b>7K</b>\n"
+        "• Medium — 7 Days  • <b>12K</b>\n"
+        "• High — 14 Days  • <b>20K</b>\n\n"
+        "Good for music needs & trial loops."
+    ),
+    "VIU": (
+        "🎬 <b>Viu Premium 1 Year Plan</b>\n"
+        "Limit: <b>15 accounts/day</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "• Lite — 3 Days  • <b>15K</b>\n"
+        "• Medium — 7 Days  • <b>25K</b>\n"
+        "• High — 14 Days  • <b>35K</b>\n\n"
+        "Great for drama and movie lovers."
+    ),
+    "VIDIO": (
+        "📺 <b>Vidio Platinum 1 TV Plan</b>\n"
+        "Limit: <b>10 accounts/day</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "• Lite — 3 Days  • <b>20K</b>\n"
+        "• Medium — 7 Days  • <b>30K</b>\n"
+        "• High — 14 Days  • <b>40K</b>\n\n"
+        "Perfect for sports and live matches."
+    ),
+    "ALIGHT": (
+        "🎥 <b>Alight Motion 1 Year Plan</b>\n"
+        "Limit: <b>15 accounts/day</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "• Lite — 3 Days  • <b>15K</b>\n"
+        "• Medium — 7 Days  • <b>25K</b>\n"
+        "• High — 14 Days  • <b>35K</b>\n\n"
+        "Ideal for mobile video editors."
+    ),
+    "ALL": (
+        "💎 <b>ALL ACCESS Plan (All Products)</b>\n"
+        "Includes: CapCut, Canva, Scribd, Apple Music, Viu, Vidio, Alight Motion.\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "• Lite — 3 Days  • <b>25K</b>\n"
+        "• Medium — 7 Days  • <b>45K</b>\n"
+        "• High — 14 Days  • <b>75K</b>\n\n"
+        "Best value for resellers and services."
+    ),
+}
 
 # ======================================
 # JSON HELPERS
@@ -70,6 +234,23 @@ def load_json(path: Path, default):
 def save_json(path: Path, data):
     with path.open("w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
+
+
+# ======================================
+# LANGUAGE SYSTEM
+# ======================================
+
+def get_lang(uid: int) -> str:
+    db = load_json(LANG_FILE, {})
+    return db.get(str(uid), "id")  # default Indonesia
+
+
+def set_lang(uid: int, lang: str):
+    if lang not in ("id", "en"):
+        lang = "id"
+    db = load_json(LANG_FILE, {})
+    db[str(uid)] = lang
+    save_json(LANG_FILE, db)
 
 
 # ======================================
@@ -117,34 +298,98 @@ def get_sisa_sewa(uid: int) -> int:
 
 
 def update_quota(uid: int):
+    """
+    Simpan quota per produk di premium.json:
+    {
+      "uid": {
+        "expire_at": "...",
+        "quota": {
+          "CANVA": {"date": "2025-01-10", "count": 0},
+          ...
+        },
+        "total_generated": 0
+      }
+    }
+    """
     today = date.today().strftime("%Y-%m-%d")
     db = get_premium_db()
     rec = db.get(str(uid), {
         "expire_at": None,
-        "today_date": today,
-        "today_count": 0,
+        "quota": {},
         "total_generated": 0,
     })
 
-    # reset harian kalau ganti tanggal
-    if rec.get("today_date") != today:
-        rec["today_date"] = today
-        rec["today_count"] = 0
+    quota = rec.get("quota", {})
+    # reset harian jika beda tanggal
+    for p_key in PRODUCT_LIMIT.keys():
+        entry = quota.get(p_key, {"date": today, "count": 0})
+        if entry.get("date") != today:
+            entry["date"] = today
+            entry["count"] = 0
+        quota[p_key] = entry
 
+    rec["quota"] = quota
     db[str(uid)] = rec
     save_premium_db(db)
     return rec
 
 
-def increment_quota(uid: int):
+def increment_quota(uid: int, produk_key: str):
     db = get_premium_db()
     rec = db.get(str(uid))
     if not rec:
         return
-    rec["today_count"] = rec.get("today_count", 0) + 1
+    quota = rec.get("quota", {})
+    today = date.today().strftime("%Y-%m-%d")
+    entry = quota.get(produk_key, {"date": today, "count": 0})
+    if entry.get("date") != today:
+        entry["date"] = today
+        entry["count"] = 0
+    entry["count"] = entry.get("count", 0) + 1
+    quota[produk_key] = entry
+    rec["quota"] = quota
     rec["total_generated"] = rec.get("total_generated", 0) + 1
     db[str(uid)] = rec
     save_premium_db(db)
+
+
+def get_quota_info(uid: int, produk_key: str):
+    db = get_premium_db()
+    rec = db.get(str(uid))
+    if not rec:
+        return 0, PRODUCT_LIMIT.get(produk_key, 0)
+    quota = rec.get("quota", {})
+    entry = quota.get(produk_key)
+    if not entry:
+        return 0, PRODUCT_LIMIT.get(produk_key, 0)
+    today = date.today().strftime("%Y-%m-%d")
+    if entry.get("date") != today:
+        return 0, PRODUCT_LIMIT.get(produk_key, 0)
+    used = entry.get("count", 0)
+    limit = PRODUCT_LIMIT.get(produk_key, 0)
+    return used, limit
+
+
+def grant_premium_days(uid: int, days: int) -> date:
+    db = get_premium_db()
+    today = date.today()
+    rec = db.get(str(uid), {})
+    if rec.get("expire_at"):
+        try:
+            old_exp = datetime.strptime(rec["expire_at"], "%Y-%m-%d").date()
+        except ValueError:
+            old_exp = today
+    else:
+        old_exp = today
+    new_expire = max(old_exp, today) + timedelta(days=days)
+
+    rec["expire_at"] = new_expire.strftime("%Y-%m-%d")
+    # reset quota hari ini
+    rec["quota"] = {}
+    rec["total_generated"] = rec.get("total_generated", 0)
+    db[str(uid)] = rec
+    save_premium_db(db)
+    return new_expire
 
 
 # ======================================
@@ -165,7 +410,7 @@ def add_history(uid: int, akun: str, produk: str):
 
 
 # ======================================
-# STOK HANDLER
+# STOK HANDLER (internal)
 # ======================================
 
 def get_stok_file(produk_key: str) -> Path:
@@ -175,11 +420,15 @@ def get_stok_file(produk_key: str) -> Path:
         return STOK_CAPCUT
     if produk_key == "SCRIBD":
         return STOK_SCRIBD
+    if produk_key == "APPLE":
+        return STOK_APPLE
     if produk_key == "VIU":
         return STOK_VIU
     if produk_key == "VIDIO":
         return STOK_VIDIO
-    # default fallback
+    if produk_key == "ALIGHT":
+        return STOK_ALIGHT
+    # fallback
     return STOK_CAPCUT
 
 
@@ -213,11 +462,15 @@ def main_keyboard():
             InlineKeyboardButton("🎬 CapCut Kosongan", callback_data="P_CAPCUT"),
         ],
         [
-            InlineKeyboardButton("📚 Scribd Kosongan", callback_data="P_SCRIBD"),
-            InlineKeyboardButton("🎵 Viu Premium 1 Tahun", callback_data="P_VIU"),
+            InlineKeyboardButton("🎵 Apple Music", callback_data="P_APPLE"),
+            InlineKeyboardButton("📚 Scribd Premium", callback_data="P_SCRIBD"),
         ],
         [
-            InlineKeyboardButton("📺 Vidio Platinum 1 TV", callback_data="P_VIDIO"),
+            InlineKeyboardButton("🎬 Viu 1 Tahun", callback_data="P_VIU"),
+            InlineKeyboardButton("📺 Vidio Platinum", callback_data="P_VIDIO"),
+        ],
+        [
+            InlineKeyboardButton("🎥 Alight Motion 1 Tahun", callback_data="P_ALIGHT"),
         ],
         [
             InlineKeyboardButton("📦 Riwayat Akun", callback_data="SAVED"),
@@ -225,39 +478,55 @@ def main_keyboard():
         ],
         [
             InlineKeyboardButton("🆘 Bantuan", callback_data="HELP"),
+            InlineKeyboardButton("👑 Admin @VanzzSkyyID", url="https://t.me/VanzzSkyyID"),
         ],
     ])
 
 
 # ======================================
-# HANDLER /START
+# /START
 # ======================================
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
+    uid = user.id
+    lang = get_lang(uid)
     nama = user.first_name or (user.username or "User")
 
-    text = (
-        "🌌 <b>VANZSTORE.ID — Multi Generator Bot</b> 🚀\n"
-        "━━━━━━━━━━━━━━━━━━━━━━━\n"
-        f"👤 Welcome, <b>{nama}</b>!\n\n"
-        "Bot otomatis untuk generate berbagai akun fresh & premium:\n"
-        "• 🎨 Canva Kosongan\n"
-        "• 🎬 CapCut Kosongan\n"
-        "• 📚 Scribd Kosongan\n"
-        "• 🎵 Viu Premium 1 Tahun\n"
-        "• 📺 Vidio Platinum 1 TV\n\n"
-        "⚙️ <b>Fitur Bot:</b>\n"
-        f"• Limit global <b>{MAX_PER_DAY} akun / hari</b>\n"
-        "• Multi produk dalam 1 bot\n"
-        "• Riwayat akun tersimpan otomatis\n"
-        "• Anti-spam & proses cepat\n\n"
-        "📲 <b>Cara pakai:</b>\n"
-        "1. Pilih dulu produk yang mau digenerate\n"
-        "2. Pilih jumlah (10 atau 20 akun)\n"
-        "3. Akun keluar & bisa dicek ulang di menu <b>Riwayat Akun</b>\n\n"
-        "Silakan pilih produk di bawah:"
-    )
+    if lang == "en":
+        text = (
+            "🌌 <b>VANZSTORE.ID — Multi Generator Bot</b> 🚀\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"👤 Welcome, <b>{nama}</b>!\n\n"
+            "This bot helps you generate ready-to-use accounts automatically.\n"
+            "Each account is prepared via an internal generator engine.\n\n"
+            "Available services:\n"
+            "• 🎨 Canva Blank\n"
+            "• 🎬 CapCut Blank\n"
+            "• 📚 Scribd Premium\n"
+            "• 🎵 Apple Music Blank\n"
+            "• 🎥 Alight Motion 1 Year\n"
+            "• 🎬 Viu Premium 1 Year\n"
+            "• 📺 Vidio Platinum 1 TV\n\n"
+            "Choose which account type you want to generate:"
+        )
+    else:
+        text = (
+            "🌌 <b>VANZSTORE.ID — Multi Generator Bot</b> 🚀\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"👤 Welcome, <b>{nama}</b>!\n\n"
+            "Bot ini membantu kamu membuat akun-akun siap pakai secara otomatis.\n"
+            "Setiap akun diproses lewat sistem generator internal, bukan manual.\n\n"
+            "Layanan yang tersedia:\n"
+            "• 🎨 Canva Kosongan\n"
+            "• 🎬 CapCut Kosongan\n"
+            "• 📚 Scribd Premium\n"
+            "• 🎵 Apple Music Kosongan\n"
+            "• 🎥 Alight Motion 1 Tahun\n"
+            "• 🎬 Viu Premium 1 Tahun\n"
+            "• 📺 Vidio Platinum 1 TV\n\n"
+            "Pilih jenis akun yang mau kamu generate:"
+        )
 
     await update.message.reply_text(
         text,
@@ -267,47 +536,93 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # ======================================
-# CALLBACK HANDLER (BUTTONS)
+# CALLBACK BUTTONS
 # ======================================
 
 async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
     uid = q.from_user.id
+    lang = get_lang(uid)
     data = q.data
 
     # STEP 1: pilih produk
     if data.startswith("P_"):
         produk_key = data.split("_", 1)[1]  # P_CANVA -> CANVA
         produk_nama = PRODUCTS.get(produk_key, produk_key)
-        await show_quantity_menu(q, produk_key, produk_nama)
+        await show_quantity_menu(q, produk_key, produk_nama, lang)
         return
 
-    # STEP 2: pilih jumlah setelah pilih produk
+    # STEP 2: pilih jumlah setelah produk
     if data.startswith("Q_"):
         # format: Q_CANVA_10
         try:
             _, produk_key, qty_str = data.split("_", 2)
             jumlah = int(qty_str)
         except Exception:
-            await q.message.reply_text("Format tombol tidak dikenal. Coba /start lagi.")
+            if lang == "en":
+                await q.message.reply_text("Unknown button format. Please /start again.")
+            else:
+                await q.message.reply_text("Format tombol tidak dikenal. Coba /start lagi.")
             return
 
         produk_nama = PRODUCTS.get(produk_key, produk_key)
-        await generate_multiple(q, uid, produk_key, produk_nama, jumlah)
+        await generate_multiple(q, uid, produk_key, produk_nama, jumlah, lang)
         return
 
-    # tombol lain
-    if data == "SAVED":
-        await show_saved(q, uid)
-    elif data == "SEWA":
-        await show_sewa(q, uid)
-    elif data == "HELP":
-        await show_help(q)
-    elif data == "BACK_HOME":
+    # tombol lihat harga plan
+    if data.startswith("PLAN_"):
+        key = data.split("_", 1)[1]  # CAPCUT / CANVA / SCRIBD / APPLE / VIU / VIDIO / ALIGHT / ALL
+        if lang == "en":
+            plan_text = PLAN_TEXTS_EN.get(key)
+        else:
+            plan_text = PLAN_TEXTS_ID.get(key)
+
+        if not plan_text:
+            msg = "Paket sewa tidak ditemukan." if lang == "id" else "Plan not found."
+            await q.message.reply_text(msg)
+            return
+
+        keyboard = InlineKeyboardMarkup([
+            [
+                InlineKeyboardButton("⬅️ Pilih layanan lain" if lang == "id" else "⬅️ Choose other service",
+                                     callback_data="BACK_PLANS"),
+                InlineKeyboardButton("⬅️ Kembali ke menu utama" if lang == "id" else "⬅️ Back to main",
+                                     callback_data="BACK_HOME"),
+            ],
+        ])
+
         await q.message.edit_text(
-            "Kembali ke menu utama.\n\n"
-            "Silakan pilih produk yang ingin kamu generate:",
+            plan_text,
+            reply_markup=keyboard,
+            parse_mode="HTML",
+        )
+        return
+
+    if data == "BACK_PLANS":
+        await show_plans_menu(q, lang)
+        return
+
+    # menu lain
+    if data == "SAVED":
+        await show_saved(q, uid, lang)
+    elif data == "SEWA":
+        await show_sewa(q, uid, lang)
+    elif data == "HELP":
+        await show_help(q, lang)
+    elif data == "BACK_HOME":
+        if lang == "en":
+            text = (
+                "Back to main menu.\n\n"
+                "Choose which service you want to generate:"
+            )
+        else:
+            text = (
+                "Kembali ke menu utama.\n\n"
+                "Silakan pilih layanan yang ingin kamu generate:"
+            )
+        await q.message.edit_text(
+            text,
             reply_markup=main_keyboard(),
             parse_mode="HTML",
         )
@@ -317,20 +632,36 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # MENU PILIH JUMLAH
 # ======================================
 
-async def show_quantity_menu(q, produk_key: str, produk_nama: str):
+async def show_quantity_menu(q, produk_key: str, produk_nama: str, lang: str):
+    if lang == "en":
+        msg = (
+            f"✨ You chose: <b>{produk_nama}</b>\n\n"
+            "Select how many accounts you want to generate:"
+        )
+        btn10 = "🔟 Generate 10 accounts"
+        btn20 = "2️⃣0️⃣ Generate 20 accounts"
+        back = "⬅️ Back to main menu"
+    else:
+        msg = (
+            f"✨ Kamu memilih: <b>{produk_nama}</b>\n\n"
+            "Pilih berapa banyak akun yang mau kamu generate:"
+        )
+        btn10 = "🔟 Generate 10 akun"
+        btn20 = "2️⃣0️⃣ Generate 20 akun"
+        back = "⬅️ Kembali ke menu utama"
+
     keyboard = InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("🔟 Generate 10 akun", callback_data=f"Q_{produk_key}_10"),
-            InlineKeyboardButton("2️⃣0️⃣ Generate 20 akun", callback_data=f"Q_{produk_key}_20"),
+            InlineKeyboardButton(btn10, callback_data=f"Q_{produk_key}_10"),
+            InlineKeyboardButton(btn20, callback_data=f"Q_{produk_key}_20"),
         ],
         [
-            InlineKeyboardButton("⬅️ Kembali ke menu utama", callback_data="BACK_HOME"),
+            InlineKeyboardButton(back, callback_data="BACK_HOME"),
         ],
     ])
 
     await q.message.edit_text(
-        f"✨ Kamu memilih: <b>{produk_nama}</b>\n\n"
-        "Pilih berapa banyak akun yang mau kamu generate:",
+        msg,
         reply_markup=keyboard,
         parse_mode="HTML",
     )
@@ -340,37 +671,60 @@ async def show_quantity_menu(q, produk_key: str, produk_nama: str):
 # GENERATE MULTI AKUN
 # ======================================
 
-async def generate_multiple(q, uid: int, produk_key: str, produk_nama: str, jumlah_awal: int):
+async def generate_multiple(q, uid: int, produk_key: str, produk_nama: str, jumlah_awal: int, lang: str):
     # cek akses premium / admin
     if not (is_admin(uid) or is_premium(uid)):
-        await q.message.reply_text(
-            "🚫 Akses premium belum aktif untuk akun kamu.\n"
-            "Silakan hubungi admin untuk aktivasi."
-        )
+        if lang == "en":
+            text = (
+                "🚫 Your premium access is not active yet.\n"
+                "Please contact admin to activate your plan."
+            )
+        else:
+            text = (
+                "🚫 Akses premium kamu belum aktif.\n"
+                "Silakan hubungi admin untuk aktivasi."
+            )
+        await q.message.reply_text(text)
         return
 
     rec = update_quota(uid)
     jumlah = jumlah_awal
 
-    # cek limit harian global (kecuali admin)
+    # cek limit per produk (kecuali admin)
     if not is_admin(uid):
-        sisa = MAX_PER_DAY - rec.get("today_count", 0)
+        used, limit = get_quota_info(uid, produk_key)
+        sisa = limit - used
         if sisa <= 0:
-            await q.message.reply_text(
-                "❌ Limit harian kamu sudah tercapai.\n"
-                "Kamu bisa generate lagi besok."
-            )
+            if lang == "en":
+                text = (
+                    f"❌ Your daily limit for {produk_nama} is already reached.\n"
+                    "Please try again tomorrow."
+                )
+            else:
+                text = (
+                    f"❌ Limit harian kamu untuk {produk_nama} sudah tercapai.\n"
+                    "Kamu bisa generate lagi besok."
+                )
+            await q.message.reply_text(text)
             return
         if jumlah > sisa:
             jumlah = sisa
 
     # notif proses
-    proses_msg = await q.message.reply_text(
-        f"🔄 <b>Generator {produk_nama}</b>\n"
-        f"⏳ Menyiapkan <b>{jumlah}</b> akun untuk kamu...\n\n"
-        "Mohon tunggu, sistem sedang memproses.",
-        parse_mode="HTML",
-    )
+    if lang == "en":
+        proses_msg = await q.message.reply_text(
+            f"🔄 <b>{produk_nama} Generator</b>\n"
+            f"⏳ Preparing <b>{jumlah}</b> accounts for you...\n\n"
+            "Please wait, the system is configuring your credentials.",
+            parse_mode="HTML",
+        )
+    else:
+        proses_msg = await q.message.reply_text(
+            f"🔄 <b>Generator {produk_nama}</b>\n"
+            f"⏳ Menyiapkan <b>{jumlah}</b> akun untuk kamu...\n\n"
+            "Mohon tunggu, sistem sedang mengonfigurasi kredensial akun kamu.",
+            parse_mode="HTML",
+        )
 
     hasil = []
 
@@ -379,17 +733,23 @@ async def generate_multiple(q, uid: int, produk_key: str, produk_nama: str, juml
         if not akun:
             break
         hasil.append(akun)
-        increment_quota(uid)
+        increment_quota(uid, produk_key)
         add_history(uid, akun, produk_nama)
         # anti-spam delay
         await asyncio.sleep(0.6)
 
     if not hasil:
-        await proses_msg.edit_text(
-            f"😿 Stok akun <b>{produk_nama}</b> sedang habis.\n"
-            "Silakan hubungi admin untuk isi ulang stok.",
-            parse_mode="HTML",
-        )
+        if lang == "en":
+            text = (
+                f"😿 Account quota for <b>{produk_nama}</b> is currently unavailable.\n"
+                "Please contact admin if you need more accounts."
+            )
+        else:
+            text = (
+                f"😿 Kuota akun untuk <b>{produk_nama}</b> sedang tidak tersedia.\n"
+                "Silakan hubungi admin jika kamu membutuhkan tambahan akun."
+            )
+        await proses_msg.edit_text(text, parse_mode="HTML")
         return
 
     lines = []
@@ -397,27 +757,44 @@ async def generate_multiple(q, uid: int, produk_key: str, produk_nama: str, juml
         lines.append(f"{i}. <code>{a}</code>")
     daftar = "\n".join(lines)
 
-    await proses_msg.edit_text(
-        f"✅ <b>Generate {produk_nama} selesai!</b>\n"
-        "━━━━━━━━━━━━━━━━━━━━━━━\n"
-        f"📦 Jumlah akun di batch ini: <b>{len(hasil)}</b>\n\n"
-        f"{daftar}\n\n"
-        "🔁 Semua akun ini juga tersimpan di menu <b>Riwayat Akun</b>.",
-        parse_mode="HTML",
-    )
+    if lang == "en":
+        text = (
+            f"✅ <b>{produk_nama} generation complete!</b>\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"📦 Accounts in this batch: <b>{len(hasil)}</b>\n\n"
+            f"{daftar}\n\n"
+            "🔁 All these accounts are also stored in your <b>History</b> menu."
+        )
+    else:
+        text = (
+            f"✅ <b>Generate {produk_nama} selesai!</b>\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"📦 Jumlah akun di batch ini: <b>{len(hasil)}</b>\n\n"
+            f"{daftar}\n\n"
+            "🔁 Semua akun ini juga tersimpan di menu <b>Riwayat Akun</b> kamu."
+        )
+
+    await proses_msg.edit_text(text, parse_mode="HTML")
 
 
 # ======================================
 # RIWAYAT, SEWA, HELP
 # ======================================
 
-async def show_saved(q, uid: int):
+async def show_saved(q, uid: int, lang: str):
     hist = get_history(uid)
     if not hist:
-        await q.message.reply_text(
-            "📦 Riwayat kosong.\n"
-            "Kamu belum pernah generate akun dari bot ini."
-        )
+        if lang == "en":
+            text = (
+                "📦 History is empty.\n"
+                "You haven't generated any account yet."
+            )
+        else:
+            text = (
+                "📦 Riwayat kosong.\n"
+                "Kamu belum pernah generate akun dari bot ini."
+            )
+        await q.message.reply_text(text)
         return
 
     lines = [
@@ -425,61 +802,187 @@ async def show_saved(q, uid: int):
         for i, h in enumerate(hist)
     ]
 
-    text = (
-        "📦 <b>Riwayat Akun Kamu</b>\n"
-        "━━━━━━━━━━━━━━━━━━━━━━━\n"
-        f"Total akun yang pernah kamu ambil: <b>{len(hist)}</b>\n\n"
-        + "\n".join(lines)
-    )
+    if lang == "en":
+        text = (
+            "📦 <b>Your Account History</b>\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"Total accounts you have generated: <b>{len(hist)}</b>\n\n"
+            + "\n".join(lines)
+        )
+    else:
+        text = (
+            "📦 <b>Riwayat Akun Kamu</b>\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"Total akun yang pernah kamu ambil: <b>{len(hist)}</b>\n\n"
+            + "\n".join(lines)
+        )
 
     await q.message.reply_text(text, parse_mode="HTML")
 
 
-async def show_sewa(q, uid: int):
+async def show_sewa(q, uid: int, lang: str):
     if is_admin(uid):
-        await q.message.reply_text(
-            "👑 Kamu adalah admin.\n"
-            "Akses generator tidak dibatasi masa sewa."
-        )
+        if lang == "en":
+            text = (
+                "👑 You are admin.\n"
+                "Your generator access is not limited by subscription."
+            )
+        else:
+            text = (
+                "👑 Kamu adalah admin.\n"
+                "Akses generator kamu tidak dibatasi masa sewa."
+            )
+        await q.message.reply_text(text)
         return
 
     if not is_premium(uid):
-        await q.message.reply_text(
-            "⏳ Akses premium kamu belum aktif.\n"
-            "Silakan hubungi admin untuk beli / perpanjang paket."
-        )
+        if lang == "en":
+            text = (
+                "⏳ Your premium access is not active.\n"
+                "Please contact admin to buy or renew a plan."
+            )
+        else:
+            text = (
+                "⏳ Akses premium kamu belum aktif.\n"
+                "Silakan hubungi admin untuk beli / perpanjang paket."
+            )
+        await q.message.reply_text(text)
         return
 
     sisa = get_sisa_sewa(uid)
     db = get_premium_db()
     rec = db.get(str(uid), {})
-    today_cnt = rec.get("today_count", 0)
+    quota = rec.get("quota", {})
 
-    await q.message.reply_text(
-        "⏳ <b>Status Sewa Premium</b>\n"
-        "━━━━━━━━━━━━━━━━━━━━━━━\n"
-        f"• Sisa masa aktif: <b>{sisa} hari</b>\n"
-        f"• Limit harian: <b>{MAX_PER_DAY} akun / hari</b>\n"
-        f"• Pemakaian hari ini: <b>{today_cnt}/{MAX_PER_DAY}</b>",
-        parse_mode="HTML",
-    )
+    if lang == "en":
+        text = (
+            "⏳ <b>Your Premium Status</b>\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"• Remaining active days: <b>{sisa} day(s)</b>\n\n"
+            "Daily usage by product (today):\n"
+        )
+    else:
+        text = (
+            "⏳ <b>Status Sewa Premium</b>\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"• Sisa masa aktif: <b>{sisa} hari</b>\n\n"
+            "Pemakaian harian per produk (hari ini):\n"
+        )
+
+    today = date.today().strftime("%Y-%m-%d")
+    lines = []
+    for p_key, p_name in PRODUCTS.items():
+        limit = PRODUCT_LIMIT.get(p_key, 0)
+        entry = quota.get(p_key, {})
+        cnt = entry.get("count", 0) if entry.get("date") == today else 0
+        lines.append(f"• {p_name}: <b>{cnt}/{limit}</b>")
+
+    text += "\n".join(lines)
+
+    await q.message.reply_text(text, parse_mode="HTML")
 
 
-async def show_help(q):
-    await q.message.reply_text(
-        "🆘 <b>Panduan Singkat</b>\n"
-        "━━━━━━━━━━━━━━━━━━━━━━━\n\n"
-        "1️⃣ /start → pilih produk (Canva, CapCut, Scribd, Viu, Vidio)\n"
-        "2️⃣ Pilih jumlah generate (10 atau 20 akun)\n"
-        "3️⃣ Tunggu proses, akun muncul + auto tersimpan di Riwayat\n\n"
-        f"Limit generate per user: <b>{MAX_PER_DAY} akun / hari</b>.\n"
-        "Untuk pembelian / perpanjang akses premium, silakan hubungi admin.",
-        parse_mode="HTML",
-    )
+async def show_help(q, lang: str):
+    if lang == "en":
+        text = (
+            "🆘 <b>Quick Guide</b>\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+            "1️⃣ Use /start → choose service (Canva, CapCut, Scribd, etc.)\n"
+            "2️⃣ Choose how many accounts you want (10 or 20)\n"
+            "3️⃣ Wait for the generator to finish, accounts will appear\n"
+            "4️⃣ All generated accounts are stored in 📦 History\n\n"
+            "For price & rental plans, use /plans.\n"
+            "For support, tap the Admin button on the main menu."
+        )
+    else:
+        text = (
+            "🆘 <b>Panduan Singkat</b>\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+            "1️⃣ Gunakan /start → pilih layanan (Canva, CapCut, Scribd, dll)\n"
+            "2️⃣ Pilih jumlah akun yang mau digenerate (10 atau 20)\n"
+            "3️⃣ Tunggu proses generator selesai, akun akan muncul\n"
+            "4️⃣ Semua akun yang pernah kamu ambil tersimpan di 📦 Riwayat Akun\n\n"
+            "Untuk harga & paket sewa gunakan /plans.\n"
+            "Untuk bantuan, gunakan tombol Admin di menu utama."
+        )
+
+    await q.message.reply_text(text, parse_mode="HTML")
 
 
 # ======================================
-# ADMIN COMMANDS
+# /PLANS
+# ======================================
+
+async def show_plans_menu_from_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    uid = update.effective_user.id
+    lang = get_lang(uid)
+    await show_plans_menu(update, lang, from_cmd=True)
+
+
+async def show_plans_menu(target, lang: str, from_cmd: bool = False):
+    if lang == "en":
+        text = (
+            "💸 <b>Rental Plans — VANZSTORE.ID</b>\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+            "Choose which service you want to see the rental plans for.\n\n"
+            "Tap a button below to see Lite / Medium / High details.\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "🌟 <b>Premium Highlight:</b>\n\n"
+            "🔥 Alight Motion 1 Year — premium editor for mobile video\n"
+            "🔥 Vidio Platinum 1 Year — full sports & entertainment\n"
+            "🔥 Scribd Premium — global ebooks & documents access\n\n"
+            "These services are part of <b>ALL PREMIUM</b> and included in 💎 All Access.\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━"
+        )
+        back_main = "⬅️ Back to main menu"
+    else:
+        text = (
+            "💸 <b>Paket Sewa — VANZSTORE.ID</b>\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+            "Pilih layanan yang ingin kamu lihat paket sewanya.\n\n"
+            "Klik salah satu tombol di bawah untuk melihat detail plan Lite / Medium / High.\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "🌟 <b>Premium Highlight:</b>\n\n"
+            "🔥 Alight Motion 1 Tahun — editor premium untuk video mobile\n"
+            "🔥 Vidio Platinum 1 Tahun — paket lengkap sport & hiburan\n"
+            "🔥 Scribd Premium — akses dokumen & e-book global\n\n"
+            "Layanan di atas masuk kategori <b>ALL PREMIUM</b>\n"
+            "dan tersedia juga di paket 💎 All Access.\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━"
+        )
+        back_main = "⬅️ Kembali ke menu utama"
+
+    keyboard = InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("🎬 CapCut", callback_data="PLAN_CAPCUT"),
+            InlineKeyboardButton("🎨 Canva", callback_data="PLAN_CANVA"),
+        ],
+        [
+            InlineKeyboardButton("📚 Scribd", callback_data="PLAN_SCRIBD"),
+            InlineKeyboardButton("🎵 Apple Music", callback_data="PLAN_APPLE"),
+        ],
+        [
+            InlineKeyboardButton("🎬 Viu 1 Tahun", callback_data="PLAN_VIU"),
+            InlineKeyboardButton("📺 Vidio Platinum", callback_data="PLAN_VIDIO"),
+        ],
+        [
+            InlineKeyboardButton("🎥 Alight Motion", callback_data="PLAN_ALIGHT"),
+            InlineKeyboardButton("💎 All Access", callback_data="PLAN_ALL"),
+        ],
+        [
+            InlineKeyboardButton(back_main, callback_data="BACK_HOME"),
+        ],
+    ])
+
+    if isinstance(target, Update):
+        await target.message.reply_text(text, reply_markup=keyboard, parse_mode="HTML")
+    else:
+        # target = callback_query.message
+        await target.message.edit_text(text, reply_markup=keyboard, parse_mode="HTML")
+
+
+# ======================================
+# ADMIN COMMANDS (PREMIUM)
 # ======================================
 
 async def addpremium(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -497,29 +1000,7 @@ async def addpremium(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("User ID dan hari harus berupa angka.")
         return
 
-    db = get_premium_db()
-    today = date.today()
-
-    old = db.get(str(uid), {})
-    if old.get("expire_at"):
-        try:
-            old_exp = datetime.strptime(old["expire_at"], "%Y-%m-%d").date()
-        except ValueError:
-            old_exp = today
-    else:
-        old_exp = today
-
-    new_expire = max(old_exp, today) + timedelta(days=hari)
-
-    db[str(uid)] = {
-        "expire_at": new_expire.strftime("%Y-%m-%d"),
-        "today_date": today.strftime("%Y-%m-%d"),
-        "today_count": 0,
-        "total_generated": old.get("total_generated", 0),
-    }
-
-    save_premium_db(db)
-
+    new_expire = grant_premium_days(uid, hari)
     await update.message.reply_text(
         f"✅ Premium user {uid} aktif sampai {new_expire}"
     )
@@ -558,9 +1039,37 @@ async def listpremium(update: Update, context: ContextTypes.DEFAULT_TYPE):
         total = rec.get("total_generated", 0)
         lines.append(f"• {uid} | exp: {exp} | total: {total}")
 
-    text = "👑 <b>Daftar User Premium</b>\n" \
-           "━━━━━━━━━━━━━━━━━━━━━━━\n\n" + "\n".join(lines)
+    text = (
+        "👑 <b>Daftar User Premium</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━\n\n" + "\n".join(lines)
+    )
     await update.message.reply_text(text, parse_mode="HTML")
+
+
+# ======================================
+# /LANGUAGE (HIDDEN)
+# ======================================
+
+async def language_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    uid = update.effective_user.id
+    if not context.args:
+        msg = (
+            "Gunakan: /language id atau /language en\n"
+            "Contoh: /language id"
+        )
+        await update.message.reply_text(msg)
+        return
+
+    lang = context.args[0].lower()
+    if lang not in ("id", "en"):
+        await update.message.reply_text("Bahasa hanya mendukung: id / en")
+        return
+
+    set_lang(uid, lang)
+    if lang == "en":
+        await update.message.reply_text("✅ Bot language set to English.")
+    else:
+        await update.message.reply_text("✅ Bahasa bot di-set ke Indonesia.")
 
 
 # ======================================
@@ -568,16 +1077,22 @@ async def listpremium(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # ======================================
 
 async def fallback_msg(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "Halo 👋\n"
-        "Gunakan /start untuk membuka menu utama bot ya."
-    )
+    uid = update.effective_user.id
+    lang = get_lang(uid)
+    if lang == "en":
+        text = "Hi 👋\nUse /start to open the main menu."
+    else:
+        text = "Halo 👋\nGunakan /start untuk membuka menu utama bot ya."
+    await update.message.reply_text(text)
 
 
 def main():
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("plans", show_plans_menu_from_cmd))
+    app.add_handler(CommandHandler("language", language_cmd))
+
     app.add_handler(CommandHandler("addpremium", addpremium))
     app.add_handler(CommandHandler("delpremium", delpremium))
     app.add_handler(CommandHandler("listpremium", listpremium))
