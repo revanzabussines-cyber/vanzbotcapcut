@@ -452,33 +452,54 @@ def ambil_satu_akun(produk_key: str):
 
 
 # ======================================
-# UI KEYBOARD
+# KEYBOARD LAYOUTS
 # ======================================
 
 def main_keyboard():
+    """Menu utama: pilih jenis generator / info."""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("⚙️ Generate Kosongan", callback_data="GEN_BLANK")],
+        [InlineKeyboardButton("💎 Generate Premium", callback_data="GEN_PREMIUM")],
+        [
+            InlineKeyboardButton("📦 Riwayat Akun", callback_data="SAVED"),
+            InlineKeyboardButton("💸 Harga Sewa", callback_data="PLANS"),
+        ],
+        [
+            InlineKeyboardButton("🆘 Bantuan", callback_data="HELP"),
+            InlineKeyboardButton("👑 Admin @VanzzSkyyID", url="https://t.me/VanzzSkyyID"),
+        ],
+    ])
+
+
+def blank_keyboard():
+    """Submenu generator kosongan."""
     return InlineKeyboardMarkup([
         [
             InlineKeyboardButton("🎨 Canva Kosongan", callback_data="P_CANVA"),
             InlineKeyboardButton("🎬 CapCut Kosongan", callback_data="P_CAPCUT"),
         ],
         [
-            InlineKeyboardButton("🎵 Apple Music", callback_data="P_APPLE"),
+            InlineKeyboardButton("🎵 Apple Music Kosongan", callback_data="P_APPLE"),
+        ],
+        [
+            InlineKeyboardButton("⬅️ Kembali ke menu utama", callback_data="BACK_HOME"),
+        ],
+    ])
+
+
+def premium_keyboard():
+    """Submenu generator premium."""
+    return InlineKeyboardMarkup([
+        [
             InlineKeyboardButton("📚 Scribd Premium", callback_data="P_SCRIBD"),
+            InlineKeyboardButton("🎬 Viu Premium 1 Tahun", callback_data="P_VIU"),
         ],
         [
-            InlineKeyboardButton("🎬 Viu 1 Tahun", callback_data="P_VIU"),
-            InlineKeyboardButton("📺 Vidio Platinum", callback_data="P_VIDIO"),
-        ],
-        [
+            InlineKeyboardButton("📺 Vidio Platinum 1 TV", callback_data="P_VIDIO"),
             InlineKeyboardButton("🎥 Alight Motion 1 Tahun", callback_data="P_ALIGHT"),
         ],
         [
-            InlineKeyboardButton("📦 Riwayat Akun", callback_data="SAVED"),
-            InlineKeyboardButton("⏳ Sisa Sewa", callback_data="SEWA"),
-        ],
-        [
-            InlineKeyboardButton("🆘 Bantuan", callback_data="HELP"),
-            InlineKeyboardButton("👑 Admin @VanzzSkyyID", url="https://t.me/VanzzSkyyID"),
+            InlineKeyboardButton("⬅️ Kembali ke menu utama", callback_data="BACK_HOME"),
         ],
     ])
 
@@ -493,39 +514,42 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     lang = get_lang(uid)
     nama = user.first_name or (user.username or "User")
 
+    # Role info
+    if is_admin(uid):
+        role_id = "Admin"
+        role_en = "Admin"
+    elif is_premium(uid):
+        role_id = "Premium"
+        role_en = "Premium"
+    else:
+        role_id = "Free User"
+        role_en = "Free User"
+
     if lang == "en":
         text = (
             "🌌 <b>VANZSTORE.ID — Multi Generator Bot</b> 🚀\n"
             "━━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"👤 Welcome, <b>{nama}</b>!\n\n"
+            f"👤 Welcome, <b>{nama}</b>!\n"
+            f"🎯 Status: <b>{role_en}</b>\n\n"
             "This bot helps you generate ready-to-use accounts automatically.\n"
             "Each account is prepared via an internal generator engine.\n\n"
-            "Available services:\n"
-            "• 🎨 Canva Blank\n"
-            "• 🎬 CapCut Blank\n"
-            "• 📚 Scribd Premium\n"
-            "• 🎵 Apple Music Blank\n"
-            "• 🎥 Alight Motion 1 Year\n"
-            "• 🎬 Viu Premium 1 Year\n"
-            "• 📺 Vidio Platinum 1 TV\n\n"
-            "Choose which account type you want to generate:"
+            "Use the menu below to start:\n"
+            "• ⚙️ Blank Generator (Canva, CapCut, Apple Music)\n"
+            "• 💎 Premium Generator (Scribd, Viu, Vidio, Alight Motion)\n\n"
+            "Choose what you want to generate:"
         )
     else:
         text = (
             "🌌 <b>VANZSTORE.ID — Multi Generator Bot</b> 🚀\n"
             "━━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"👤 Welcome, <b>{nama}</b>!\n\n"
+            f"👤 Welcome, <b>{nama}</b>!\n"
+            f"🎯 Status: <b>{role_id}</b>\n\n"
             "Bot ini membantu kamu membuat akun-akun siap pakai secara otomatis.\n"
             "Setiap akun diproses lewat sistem generator internal, bukan manual.\n\n"
-            "Layanan yang tersedia:\n"
-            "• 🎨 Canva Kosongan\n"
-            "• 🎬 CapCut Kosongan\n"
-            "• 📚 Scribd Premium\n"
-            "• 🎵 Apple Music Kosongan\n"
-            "• 🎥 Alight Motion 1 Tahun\n"
-            "• 🎬 Viu Premium 1 Tahun\n"
-            "• 📺 Vidio Platinum 1 TV\n\n"
-            "Pilih jenis akun yang mau kamu generate:"
+            "Gunakan menu di bawah untuk mulai:\n"
+            "• ⚙️ Generator Kosongan (Canva, CapCut, Apple Music)\n"
+            "• 💎 Generator Premium (Scribd, Viu, Vidio, Alight Motion)\n\n"
+            "Pilih aksi yang kamu mau:"
         )
 
     await update.message.reply_text(
@@ -545,6 +569,43 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
     uid = q.from_user.id
     lang = get_lang(uid)
     data = q.data
+
+    # menu kategori
+    if data == "GEN_BLANK":
+        if lang == "en":
+            msg = (
+                "⚙️ <b>Blank Generator</b>\n"
+                "━━━━━━━━━━━━━━━━━━━━━━━\n"
+                "Choose which blank service you want to generate:"
+            )
+        else:
+            msg = (
+                "⚙️ <b>Generator Kosongan</b>\n"
+                "━━━━━━━━━━━━━━━━━━━━━━━\n"
+                "Pilih layanan kosongan yang mau kamu generate:"
+            )
+        await q.message.edit_text(msg, reply_markup=blank_keyboard(), parse_mode="HTML")
+        return
+
+    if data == "GEN_PREMIUM":
+        if lang == "en":
+            msg = (
+                "💎 <b>Premium Generator</b>\n"
+                "━━━━━━━━━━━━━━━━━━━━━━━\n"
+                "Choose which premium service you want to generate:"
+            )
+        else:
+            msg = (
+                "💎 <b>Generator Premium</b>\n"
+                "━━━━━━━━━━━━━━━━━━━━━━━\n"
+                "Pilih layanan premium yang mau kamu generate:"
+            )
+        await q.message.edit_text(msg, reply_markup=premium_keyboard(), parse_mode="HTML")
+        return
+
+    if data == "PLANS":
+        await show_plans_menu(q, lang)
+        return
 
     # STEP 1: pilih produk
     if data.startswith("P_"):
@@ -570,9 +631,9 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await generate_multiple(q, uid, produk_key, produk_nama, jumlah, lang)
         return
 
-    # tombol lihat harga plan
+    # tombol lihat harga plan detail
     if data.startswith("PLAN_"):
-        key = data.split("_", 1)[1]  # CAPCUT / CANVA / SCRIBD / APPLE / VIU / VIDIO / ALIGHT / ALL
+        key = data.split("_", 1)[1]
         if lang == "en":
             plan_text = PLAN_TEXTS_EN.get(key)
         else:
@@ -585,10 +646,14 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         keyboard = InlineKeyboardMarkup([
             [
-                InlineKeyboardButton("⬅️ Pilih layanan lain" if lang == "id" else "⬅️ Choose other service",
-                                     callback_data="BACK_PLANS"),
-                InlineKeyboardButton("⬅️ Kembali ke menu utama" if lang == "id" else "⬅️ Back to main",
-                                     callback_data="BACK_HOME"),
+                InlineKeyboardButton(
+                    "⬅️ Pilih layanan lain" if lang == "id" else "⬅️ Choose other service",
+                    callback_data="BACK_PLANS",
+                ),
+                InlineKeyboardButton(
+                    "⬅️ Kembali ke menu utama" if lang == "id" else "⬅️ Back to main",
+                    callback_data="BACK_HOME",
+                ),
             ],
         ])
 
@@ -613,13 +678,13 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif data == "BACK_HOME":
         if lang == "en":
             text = (
-                "Back to main menu.\n\n"
-                "Choose which service you want to generate:"
+                "⬅️ Back to main menu.\n\n"
+                "Choose what you want to do:"
             )
         else:
             text = (
-                "Kembali ke menu utama.\n\n"
-                "Silakan pilih layanan yang ingin kamu generate:"
+                "⬅️ Kembali ke menu utama.\n\n"
+                "Silakan pilih aksi yang kamu mau:"
             )
         await q.message.edit_text(
             text,
@@ -687,7 +752,7 @@ async def generate_multiple(q, uid: int, produk_key: str, produk_nama: str, juml
         await q.message.reply_text(text)
         return
 
-    rec = update_quota(uid)
+    update_quota(uid)
     jumlah = jumlah_awal
 
     # cek limit per produk (kecuali admin)
@@ -887,22 +952,24 @@ async def show_help(q, lang: str):
         text = (
             "🆘 <b>Quick Guide</b>\n"
             "━━━━━━━━━━━━━━━━━━━━━━━\n\n"
-            "1️⃣ Use /start → choose service (Canva, CapCut, Scribd, etc.)\n"
-            "2️⃣ Choose how many accounts you want (10 or 20)\n"
-            "3️⃣ Wait for the generator to finish, accounts will appear\n"
-            "4️⃣ All generated accounts are stored in 📦 History\n\n"
-            "For price & rental plans, use /plans.\n"
+            "1️⃣ Use /start → choose Blank or Premium generator.\n"
+            "2️⃣ Pick the service (Canva, CapCut, Scribd, etc.).\n"
+            "3️⃣ Choose how many accounts you want (10 or 20).\n"
+            "4️⃣ Wait for the generator to finish, accounts will appear.\n"
+            "5️⃣ All generated accounts are stored in 📦 History.\n\n"
+            "For price & rental plans, use /plans or the 💸 Harga Sewa button.\n"
             "For support, tap the Admin button on the main menu."
         )
     else:
         text = (
             "🆘 <b>Panduan Singkat</b>\n"
             "━━━━━━━━━━━━━━━━━━━━━━━\n\n"
-            "1️⃣ Gunakan /start → pilih layanan (Canva, CapCut, Scribd, dll)\n"
-            "2️⃣ Pilih jumlah akun yang mau digenerate (10 atau 20)\n"
-            "3️⃣ Tunggu proses generator selesai, akun akan muncul\n"
-            "4️⃣ Semua akun yang pernah kamu ambil tersimpan di 📦 Riwayat Akun\n\n"
-            "Untuk harga & paket sewa gunakan /plans.\n"
+            "1️⃣ Gunakan /start → pilih Generator Kosongan atau Premium.\n"
+            "2️⃣ Pilih layanan (Canva, CapCut, Scribd, dll).\n"
+            "3️⃣ Pilih jumlah akun yang mau digenerate (10 atau 20).\n"
+            "4️⃣ Tunggu proses generator selesai, akun akan muncul.\n"
+            "5️⃣ Semua akun yang pernah kamu ambil tersimpan di 📦 Riwayat Akun.\n\n"
+            "Untuk harga & paket sewa gunakan /plans atau tombol 💸 Harga Sewa.\n"
             "Untuk bantuan, gunakan tombol Admin di menu utama."
         )
 
@@ -916,10 +983,10 @@ async def show_help(q, lang: str):
 async def show_plans_menu_from_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     uid = update.effective_user.id
     lang = get_lang(uid)
-    await show_plans_menu(update, lang, from_cmd=True)
+    await show_plans_menu(update, lang)
 
 
-async def show_plans_menu(target, lang: str, from_cmd: bool = False):
+async def show_plans_menu(target, lang: str):
     if lang == "en":
         text = (
             "💸 <b>Rental Plans — VANZSTORE.ID</b>\n"
@@ -974,11 +1041,13 @@ async def show_plans_menu(target, lang: str, from_cmd: bool = False):
         ],
     ])
 
+    # target bisa Update (dari /plans) atau CallbackQuery (dari tombol PLANS)
     if isinstance(target, Update):
-        await target.message.reply_text(text, reply_markup=keyboard, parse_mode="HTML")
+        msg = target.message
+        await msg.reply_text(text, reply_markup=keyboard, parse_mode="HTML")
     else:
-        # target = callback_query.message
-        await target.message.edit_text(text, reply_markup=keyboard, parse_mode="HTML")
+        msg = target.message
+        await msg.edit_text(text, reply_markup=keyboard, parse_mode="HTML")
 
 
 # ======================================
