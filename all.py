@@ -27,7 +27,7 @@ if not BOT_TOKEN:
     raise RuntimeError("BOT_TOKEN wajib diisi di environment variable!")
 
 # GANTI KE ID TELEGRAM LU SENDIRI
-ADMIN_IDS = {7321522905}  # contoh: {123456789}
+ADMIN_IDS = {7321522905}  # ganti kalau ID lu beda
 
 BASE = Path(__file__).parent
 PREMIUM_FILE = BASE / "premium.json"
@@ -449,6 +449,15 @@ def ambil_satu_akun(produk_key: str):
             f.write(s + "\n")
 
     return akun
+
+
+def count_stok(produk_key: str) -> int:
+    """Hitung sisa stok akun di file stok."""
+    stok_file = get_stok_file(produk_key)
+    if not stok_file.exists():
+        return 0
+    lines = [l.strip() for l in stok_file.read_text().splitlines() if l.strip()]
+    return len(lines)
 
 
 # ======================================
@@ -1051,7 +1060,7 @@ async def show_plans_menu(target, lang: str):
 
 
 # ======================================
-# ADMIN COMMANDS (PREMIUM)
+# ADMIN COMMANDS (PREMIUM & STOK)
 # ======================================
 
 async def addpremium(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -1115,6 +1124,25 @@ async def listpremium(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(text, parse_mode="HTML")
 
 
+async def stok_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Hanya admin yang bisa pakai /stok, user lain di-silent."""
+    uid = update.effective_user.id
+    if not is_admin(uid):
+        return
+
+    lines = []
+    for key, name in PRODUCTS.items():
+        sisa = count_stok(key)
+        lines.append(f"• {name}: <b>{sisa}</b> akun tersisa")
+
+    text = (
+        "📊 <b>Status Stok Akun</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━\n" +
+        "\n".join(lines)
+    )
+    await update.message.reply_text(text, parse_mode="HTML")
+
+
 # ======================================
 # /LANGUAGE (HIDDEN)
 # ======================================
@@ -1165,6 +1193,7 @@ def main():
     app.add_handler(CommandHandler("addpremium", addpremium))
     app.add_handler(CommandHandler("delpremium", delpremium))
     app.add_handler(CommandHandler("listpremium", listpremium))
+    app.add_handler(CommandHandler("stok", stok_cmd))  # admin only, hidden
 
     app.add_handler(CallbackQueryHandler(handle_buttons))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, fallback_msg))
