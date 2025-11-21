@@ -467,7 +467,7 @@ def count_stok(produk_key: str) -> int:
 def main_keyboard():
     """Menu utama: pilih jenis generator / info."""
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton("⚙️ Generate Kosongan", callback_data="GEN_BLANK")],
+        [InlineKeyboardButton("✦ Generate Kosongan", callback_data="GEN_BLANK")],
         [InlineKeyboardButton("💎 Generate Premium", callback_data="GEN_PREMIUM")],
         [
             InlineKeyboardButton("📦 Riwayat Akun", callback_data="SAVED"),
